@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Caso de la Pata Secuestrada — Organizador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --board:#241C15;
+    --board-2:#33261C;
+    --paper:#F1E6CC;
+    --paper-2:#E8D9B8;
+    --ink:#241C15;
+    --red:#A6362B;
+    --yellow:#D9A544;
+    --muted:#8A7860;
+    --green:#4C6B4F;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 20% -10%, #3a2c20 0%, transparent 55%),
+      var(--board);
+    color:var(--paper);
+    font-family:'Libre Baskerville', serif;
+    min-height:100vh;
+    padding:32px 16px 80px;
+  }
+  h1,h2,h3,.label,.stamp,button,.tab{font-family:'Special Elite', monospace;}
+  .wrap{max-width:920px;margin:0 auto;}
+  header.masthead{text-align:center;margin-bottom:28px;}
+  header.masthead .eyebrow{
+    color:var(--yellow);letter-spacing:.14em;font-size:12px;text-transform:uppercase;
+  }
+  header.masthead h1{
+    font-size:clamp(28px,5vw,42px);margin:8px 0 4px;color:var(--paper);
+    text-shadow:2px 2px 0 rgba(0,0,0,.35);
+  }
+  header.masthead p{color:var(--muted);font-style:italic;margin:0;}
+
+  .tabs{display:flex;gap:8px;justify-content:center;margin:24px 0;flex-wrap:wrap;}
+  .tab{
+    background:var(--board-2);color:var(--paper);border:1px solid #4a3a2a;
+    padding:10px 18px;cursor:pointer;font-size:13px;letter-spacing:.04em;
+    border-radius:3px;
+  }
+  .tab.active{background:var(--red);color:#fff;border-color:var(--red);}
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .card{
+    background:var(--paper);color:var(--ink);border-radius:2px;
+    padding:24px;margin-bottom:20px;
+    box-shadow:0 10px 24px rgba(0,0,0,.35), 0 0 0 1px rgba(0,0,0,.05);
+    position:relative;
+  }
+  .card::before{
+    content:"";position:absolute;top:-7px;left:50%;transform:translateX(-50%);
+    width:12px;height:12px;border-radius:50%;
+    background:var(--red);box-shadow:0 1px 2px rgba(0,0,0,.5);
+  }
+  .card h2{margin-top:6px;font-size:18px;letter-spacing:.03em;}
+  .card h2 .n{color:var(--red);margin-right:8px;}
+  .hint{color:var(--muted);font-size:13px;margin:0 0 14px;font-style:italic;}
+
+  label{display:block;font-size:12px;letter-spacing:.05em;color:var(--muted);margin:14px 0 6px;text-transform:uppercase;font-family:'Special Elite',monospace;}
+  textarea,select,input[type=text]{
+    width:100%;font-family:'Libre Baskerville',serif;font-size:14px;
+    padding:10px;border:1px solid #cbb98c;border-radius:2px;background:#fffdf6;color:var(--ink);
+  }
+  textarea{min-height:150px;resize:vertical;}
+  .row{display:flex;gap:12px;flex-wrap:wrap;}
+  .row > div{flex:1;min-width:180px;}
+
+  button.btn{
+    margin-top:18px;background:var(--ink);color:var(--paper);border:none;
+    padding:12px 20px;border-radius:2px;cursor:pointer;font-size:13px;letter-spacing:.04em;
+  }
+  button.btn:hover{background:#3a2c20;}
+  button.btn.primary{background:var(--red);}
+  button.btn.primary:hover{background:#8c2c22;}
+  button.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--ink);}
+  button.btn:disabled{opacity:.4;cursor:not-allowed;}
+
+  table{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px;}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #d9c9a0;}
+  th{font-family:'Special Elite',monospace;font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.05em;}
+  td.pass{font-family:monospace;font-weight:bold;color:var(--red);letter-spacing:.08em;}
+  .msg-line{font-family:monospace;font-size:13px;background:#fffdf6;border:1px dashed #cbb98c;padding:6px 8px;margin:4px 0;border-radius:2px;}
+
+  .note{
+    background:#fff6e0;border-left:4px solid var(--yellow);padding:10px 14px;
+    font-size:13px;color:#4a3a1a;margin-top:14px;border-radius:2px;
+  }
+  .note.warn{border-left-color:var(--red);background:#fdecea;color:#6b241c;}
+
+  /* GUEST VIEW */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-top:18px;}
+  .name-tile{
+    background:var(--paper);color:var(--ink);border-radius:2px;padding:16px 10px;text-align:center;
+    cursor:pointer;font-family:'Special Elite',monospace;font-size:14px;
+    box-shadow:0 6px 14px rgba(0,0,0,.3);transition:transform .15s ease;
+    position:relative;
+  }
+  .name-tile:nth-child(3n){transform:rotate(-1.2deg);}
+  .name-tile:nth-child(3n+1){transform:rotate(1deg);}
+  .name-tile:hover{transform:scale(1.04) rotate(0deg);}
+  .name-tile::before{
+    content:"";position:absolute;top:-6px;left:50%;transform:translateX(-50%);
+    width:10px;height:10px;border-radius:50%;background:var(--red);
+  }
+
+  .modal-bg{
+    position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;
+    align-items:center;justify-content:center;z-index:50;padding:16px;
+  }
+  .modal-bg.open{display:flex;}
+  .modal{
+    background:var(--paper);color:var(--ink);border-radius:3px;padding:26px;max-width:420px;width:100%;
+    box-shadow:0 20px 50px rgba(0,0,0,.5);
+  }
+  .modal h3{margin-top:0;}
+  .modal input{margin-top:8px;}
+  .modal .err{color:var(--red);font-size:13px;margin-top:8px;display:none;}
+  .modal .actions{display:flex;gap:10px;margin-top:16px;}
+
+  .reveal{
+    background:var(--paper);color:var(--ink);border-radius:2px;padding:26px;margin-top:20px;
+    box-shadow:0 10px 24px rgba(0,0,0,.35);position:relative;
+  }
+  .reveal .stamp{
+    display:inline-block;color:var(--red);border:3px solid var(--red);padding:4px 12px;
+    transform:rotate(-6deg);font-size:12px;letter-spacing:.1em;border-radius:4px;margin-bottom:10px;
+  }
+  .reveal h2{margin:6px 0 2px;}
+  .reveal .sub{color:var(--muted);font-style:italic;margin-bottom:16px;}
+  .reveal h4{font-family:'Special Elite',monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--red);margin:18px 0 8px;}
+  .reveal ul{margin:0;padding-left:20px;}
+  .reveal li{margin-bottom:6px;}
+  .back-link{display:inline-block;margin-top:20px;color:var(--paper);cursor:pointer;text-decoration:underline;font-size:13px;}
+
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px;}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+
+  <header class="masthead">
+    <div class="eyebrow">Expediente confidencial</div>
+    <h1>El Caso de la Pata Secuestrada</h1>
+    <p>Herramienta de organización y reparto de roles</p>
+  </header>
+
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-tab="setup">1 · Invitados</div>
+    <div class="tab" data-tab="pins">2 · Fijos</div>
+    <div class="tab" data-tab="results">3 · Sorteo</div>
+    <div class="tab" data-tab="guestpreview">4 · Vista invitados</div>
+    <div class="tab" data-tab="modguide">5 · Guía en vivo</div>
+  </div>
+
+  <!-- PANEL 1: ATTENDEES -->
+  <section class="panel active" id="panel-setup">
+    <div class="card">
+      <h2><span class="n">01</span>Lista de invitados confirmados</h2>
+      <p class="hint">Un nombre real por línea. Podés volver acá y actualizar antes de sortear, según quién confirme asistencia.</p>
+      <textarea id="attendeesInput" placeholder="Juli&#10;Fede&#10;Mica&#10;Nico&#10;..."></textarea>
+      <div class="note" id="countNote">0 invitados cargados.</div>
+      <button class="btn primary" onclick="goTab('pins')">Siguiente: asignar fijos →</button>
+    </div>
+  </section>
+
+  <!-- PANEL 2: MANUAL PINS -->
+  <section class="panel" id="panel-pins">
+    <div class="card">
+      <h2><span class="n">02</span>Asignación manual (opcional, hasta 2)</h2>
+      <p class="hint">Elegí vos quién tiene qué personaje para estas personas. El resto se sortea al azar en el paso siguiente. Podés dejarlo vacío si preferís que sea todo al azar.</p>
+      <div class="row">
+        <div>
+          <label>Invitado 1</label>
+          <select id="pinName1"><option value="">— sin fijar —</option></select>
+        </div>
+        <div>
+          <label>Personaje asignado</label>
+          <select id="pinRole1"><option value="">— elegir —</option></select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Invitado 2</label>
+          <select id="pinName2"><option value="">— sin fijar —</option></select>
+        </div>
+        <div>
+          <label>Personaje asignado</label>
+          <select id="pinRole2"><option value="">— elegir —</option></select>
+        </div>
+      </div>
+      <div class="note">Estos nombres de personaje son solo para vos: los invitados nunca ven esta pantalla ni la palabra "Impostor" o "Loco".</div>
+      <button class="btn primary" onclick="goTab('results')">Siguiente: sortear →</button>
+    </div>
+  </section>
+
+  <!-- PANEL 3: RESULTS -->
+  <section class="panel" id="panel-results">
+    <div class="card">
+      <h2><span class="n">03</span>Sorteo y contraseñas</h2>
+      <p class="hint">Al sortear se genera una contraseña de 4 dígitos por persona. Se la pasás por chat, individualmente, a cada invitado.</p>
+      <button class="btn primary" onclick="runDraw()">🎲 Sortear roles</button>
+      <button class="btn ghost" onclick="runDraw()" style="display:none" id="reDrawBtn">Volver a sortear</button>
+      <div id="drawWarnings"></div>
+      <div id="resultsTableWrap"></div>
+      <div id="messagesWrap"></div>
+      <button class="btn" id="downloadBtn" style="display:none" onclick="downloadGuestFile()">⬇ Descargar HTML final para invitados</button>
+      <div class="note" id="downloadNote" style="display:none">
+        Este archivo descargado es autocontenido: cada invitado lo abre, toca su nombre y pone la contraseña que le pasaste. No hace falta servidor. Ojo: los datos de todos quedan embebidos en el archivo (con nombres y contraseñas ya resueltos), así que es una protección casera contra miradas curiosas en la mesa, no una seguridad real — alguien con conocimientos técnicos podría verlo todo mirando el código fuente. Para una juntada de amigos alcanza y sobra.
+      </div>
+    </div>
+  </section>
+
+  <!-- PANEL 4: GUEST PREVIEW (dogfood the exported experience here too) -->
+  <section class="panel" id="panel-guestpreview">
+    <div class="card">
+      <h2><span class="n">04</span>Vista previa como invitado</h2>
+      <p class="hint">Así se va a ver el archivo que descargues, para que lo revises antes de mandarlo.</p>
+    </div>
+    <div id="guestApp"></div>
+  </section>
+
+  <!-- PANEL 5: MODERATOR LIVE GUIDE -->
+  <section class="panel" id="panel-modguide">
+    <div class="card">
+      <h2><span class="n">05</span>Guía en vivo para el moderador</h2>
+      <p class="hint">Todo esto es solo para vos, mientras corre el debate. No se lee de un tirón: se va soltando de a poco, según cómo venga la charla. Con 16 personas conviene ir más despacio y usar los cortes de subgrupo antes de tirar pistas nuevas.</p>
+    </div>
+
+    <div class="card">
+      <h2>Cronograma sugerido de pistas graduales (20–30 min)</h2>
+      <p class="hint">Es una guía, no una receta. Si el grupo ya está discutiendo con fuerza, esperá antes de sumar la siguiente pista.</p>
+      <table>
+        <thead><tr><th>Momento</th><th>Qué hacer</th></tr></thead>
+        <tbody>
+          <tr><td>Min 0–2</td><td>Leer la ambientación completa y mostrar las 4 pistas públicas juntas.</td></tr>
+          <tr><td>Min 2–7</td><td>Debate libre en el grupo grande. No intervenir todavía.</td></tr>
+          <tr><td>Min 7–10</td><td><strong>Ronda de subgrupos 1</strong> (ver más abajo). Corta el debate grande a propósito, antes de que se estanque.</td></tr>
+          <tr><td>Min 10–14</td><td>Vuelta al grupo grande: cada mesa comparte una sola conclusión. Recién ahí, si hace falta, soltá una pista sutil del banco de más abajo (una sola).</td></tr>
+          <tr><td>Min 14–17</td><td><strong>Ronda de subgrupos 2</strong> (duplas). Sirve para que circulen versiones cruzadas antes del cierre.</td></tr>
+          <tr><td>Min 17–20</td><td>Última vuelta grupal. Si el debate está muy trabado o nadie arriesga un nombre, ahí es el mejor momento para la pista de "la chismosa del barrio".</td></tr>
+          <tr><td>Min 20+</td><td>Pedir votos. No agregues más pistas después de este punto.</td></tr>
+        </tbody>
+      </table>
+      <div class="note">Regla general: máximo 2 o 3 pistas extra en total por partida. Si tirás demasiadas, se resuelve muy rápido y se pierde la gracia.</div>
+    </div>
+
+    <div class="card">
+      <h2>Mini sesiones de subgrupos</h2>
+      <p class="hint">Con 16 invitados el debate en un solo grupo se vuelve caótico. Cortar en subgrupos un par de veces ayuda a que todos hablen y a dosificar el ritmo.</p>
+
+      <h3 style="margin-bottom:4px;">Ronda 1 — Mesas de sospecha (grupos de 4)</h3>
+      <ul>
+        <li>Armá 4 mesas de 4 personas (al azar, mezclando quien quiera con quien no).</li>
+        <li>Cada mesa tiene 3 minutos para comentar cuál de las 4 pistas públicas les resulta más rara, sin contar su propia ficha.</li>
+        <li>Al volver al grupo grande, cada mesa dice en una frase cuál fue su pista más sospechosa. No hace falta que digan por qué.</li>
+      </ul>
+
+      <h3 style="margin-bottom:4px;">Ronda 2 — Duplas cruzadas</h3>
+      <ul>
+        <li>Armá parejas al azar, distintas de la mesa anterior.</li>
+        <li>Cada uno tiene 1 minuto para contarle a su pareja su "coartada" de esa noche (puede mentir, como en el resto del juego).</li>
+        <li>Vuelta al grupo grande: cualquiera puede citar, sin decir quién se lo contó, algo que le pareció raro de lo que escuchó.</li>
+      </ul>
+
+      <div class="note">Tip logístico para 16 personas: numerá a la gente del 1 al 4 al entrar y usá ese número para armar las mesas rápido, sin perder tiempo organizando grupos a mano cada vez.</div>
+    </div>
+
+    <div class="card">
+      <h2>Banco de pistas — "la vieja chismosa del barrio"</h2>
+      <p class="hint">Para usar cerca del final, si el debate se estanca o nadie se anima a acusar a nadie. Elegí una o dos, no las leas todas. Nunca digas "Aliado" ni "Loco" en voz alta, ni nombres reales: son pistas de clima, no confirmaciones.</p>
+
+      <h3 style="margin-bottom:4px;">Insinúa que alguien protege a otro (Aliado)</h3>
+      <ul>
+        <li>"Me contaron que la vecina de la esquina, la que se entera de todo, dice que anoche vio a dos personas de esta mesa cuchichear tranquilas cuando alguien mencionó el freezer. Como que ya sabían algo antes de que se armara todo este lío."</li>
+        <li>"Un dato que llegó por el grupo del barrio: parece que no fue una sola persona la que se movió esa noche cerca de la cocina. Alguien vio algo... y decidió quedarse calladito hasta ahora."</li>
+      </ul>
+
+      <h3 style="margin-bottom:4px;">Insinúa que alguien quiere que lo culpen (Loco)</h3>
+      <ul>
+        <li>"Otra cosa que dice la señora de la esquina: que hay alguien en esta mesa que estaría contento si lo señalaran a él. No sé si creerle, pero por las dudas, no se dejen convencer tan fácil por el primero que casi confiesa."</li>
+        <li>"Cuidado con quien se victimiza demasiado rápido esta noche. A veces el que más grita 'pudo haber sido yo' es justamente el que menos tiene que perder si lo votan."</li>
+      </ul>
+
+      <h3 style="margin-bottom:4px;">Neutras / para despistar (opcionales, no apuntan a nadie en particular)</h3>
+      <ul>
+        <li>"La chismosa también dijo que sintió olor raro cerca de la ventana del living, no solo en la cocina. Tómenlo con pinzas, a esa mujer le gusta exagerar."</li>
+        <li>"Dicen que alguien entró y salió del patio más de una vez esa noche. Puede no significar nada, pero bueno, ahí lo dejo."</li>
+      </ul>
+
+      <div class="note warn">Estas pistas son intencionalmente ambiguas: apuntan a que "hay" un Aliado y un Loco en la sala sin decir quiénes son. Están pensadas para generar más discusión, no para resolver el caso por vos.</div>
+    </div>
+  </section>
+
+  <footer>Guardá este archivo (el organizador) solo para vos — el que se comparte con los invitados es el que descargás en el paso 3.</footer>
+</div>
+
+<script>
+/* ---------------------------------------------------------
+   ROLE DEFINITIONS
+   Priority order = the order slots get filled as headcount grows.
+   {{key}} placeholders get resolved to the real name holding that role.
+--------------------------------------------------------- */
+const ROLES = [
+  { id:'impostor', name:'El Cocinero de Medianoche [CULPABLE]',
+    hechos:'Le tiraste salsa o vino a "Pata" sin querer. Para limpiarla rápido y que nadie lo notara, la metiste al microondas para secarla. Echó humo y se chamuscó. Entraste en pánico y la escondiste en el fondo del congelador.',
+    defensas:['Afirmá que estabas preparándote un té a la medianoche y se te quemó una tostada.','Desviá la atención hacia la lavadora, diciendo que alguien intentó lavar algo de madrugada para ocultar evidencias.'] },
+  { id:'aliado1', name:'El Buscador de Hielo[Aliado]', refs:['impostor'],
+    hechos:'Fuiste al congelador a buscar hielo para un trago a la medianoche y viste el momento exacto en que {{impostor}} metía una pata de peluche chamuscada adentro. Querés protegerlo/a a toda costa.',
+    defensas:['Negá rotundamente que {{impostor}} haya tenido algo que ver.','Atacá a cualquiera que sospeche de esa persona diciendo que están inventando cosas para salvarse.'] },
+  { id:'aliado2', name:'El Guardián del Repasador[Aliado]', refs:['impostor'],
+    hechos:'A las 3:00 AM viste salir a {{impostor}} agitado/a de la cocina. Creyendo que había cometido una torpeza con la casa, encendiste la lavadora con unos repasadores para tapar el ruido y borrar cualquier rastro que lo incriminara.',
+    defensas:['Admití abiertamente que encendiste la lavadora, pero jurá que fue solo porque manchaste un repasador con tu bebida.','Insistí en que el culpable tuvo que ser alguien que estuvo afuera o cerca del patio.'] },
+  { id:'loco1', name:'El Insomne',
+    hechos:'No soportás el caos familiar ni la responsabilidad social de la mañana. Querés ir a la "cárcel del juego" para tener veinte minutos de paz.',
+    defensas:['Defendete de manera normal, pero soltá de a poco uno o dos detalles sutiles que te compliquen. Nunca lo digas como un chiste ni lo repitas muchas veces.','Ejemplo de tono: mencioná de pasada que tenías barro en las zapatillas "de la tarde, no de la noche" — una aclaración que nadie te pidió.'] },
+  { id:'loco2', name:'El Agotado Social',
+    hechos:'Igual que hay quien no soporta el caos, vos tampoco: llevás toda la mañana esquivando charlas y lo único que querés es que te "condenen" al rincón tranquilo de la casa.',
+    defensas:['Dejá caer, como quien no quiere la cosa, que sabés más de la cocina o del freezer de lo que deberías.','No lo fuerces: alcanza con un comentario raro por vez, no con una confesión.'] },
+  { id:'duenocasa', name:'El Dueño de Casa',
+    hechos:'Dejaste la ventana del living abierta en un barrio lleno de gatos callejeros. Más tarde notaste barro en el sillón, te asustaste, cerraste la ventana y pasaste un trapo rápido por el tapizado para que no te retaran.',
+    defensas:['Admití que limpiaste el sillón, pero jurá que fue solo porque alguien pisó con calzado sucio.','Sostené la teoría de que un gato callejero entró por la ventana y se llevó el peluche.'] },
+  { id:'observador', name:'El Sediento Nocturno', refs:['duenocasa'],
+    hechos:'Te levantaste a tomar agua a la madrugada y viste a {{duenocasa}} limpiando a escondidas el sofá y cerrando la ventana a toda prisa.',
+    defensas:['Acusá directamente a {{duenocasa}} de estar ocultando algo grave que pasó en el sofá.','Exigí que explique por qué abrió la ventana de noche.'] },
+  { id:'tio', name:'El Amigo Prolijo',
+    hechos:'Temprano en la noche quisiste hacer una buena acción y lavaste el peluche del elefante porque estaba pegajoso. Sin embargo, cuando lo agarraste, el peluche ya no tenía la pata.',
+    defensas:['Revelá cuando sea necesario que el peluche ya estaba mutilado desde temprano.','Asegurá que alguien se llevó o escondió la pata antes de que vos agarraras el peluche para lavarlo.'] },
+  { id:'duenoperro1', name:'El Dueño del Perro',
+    hechos:'Trajiste a tu perro a la reunión. A la noche lo encontraste mordisqueando algo en el piso y viste guata tirada. Asustado/a de que tu mascota hubiera destruido a "Pata", juntaste la guata con la mano y la tiraste rápido al tacho de basura.',
+    defensas:['Ocultá que tu perro mordió algo.','Si te acusan por la guata del tacho, decí que la viste tirada y simplemente la juntaste por limpieza, pero echale la culpa al desorden general de la casa.'] },
+  { id:'prevenido', name:'El Prevenido',
+    hechos:'Hace dos semanas compraste una pata de elefante de repuesto por internet "por si acaso", pero la perdiste dentro de la baulera de tu auto anoche.',
+    defensas:['Insistí en que tenés una solución al problema en el auto, aunque no tengas idea de dónde quedó la pata original.'] },
+  { id:'fumador', name:'El Fumador Discreto', refs:['impostor'],
+    hechos:'Sentiste olor a humo cerca de la medianoche, cerca de {{impostor}}. Pensaste que estaba fumando a escondidas dentro de la casa y no dijiste nada para no meterlo/a en problemas.',
+    defensas:['Sostené que sentiste olor a humo pegado a la ropa de esa persona, pero que creíste que era cigarrillo.'] },
+  { id:'duenoperro2', name:'La Otra Dueña del Perro',
+    hechos:'Viniste con tu pareja y trajeron al perro entre los dos. Fuiste vos quien realmente vio al perro mordisqueando algo raro en el piso, rodeado de guata, y le avisaste a tu pareja para juntarla rápido antes de que alguien más la viera.',
+    defensas:['Coordiná tu versión con quien tenga el mismo secreto del perro, sin contradecirse.','Si preguntan por la guata, dejá que hable primero la otra persona del perro y vos solo confirmá.'] },
+  { id:'g1', name:'El Invitado Distraído',
+    hechos:'No viste nada fuera de lo común: te la pasaste picando algo en la cocina y charlando de cualquier cosa.',
+    defensas:['No tenés nada que ocultar, así que hacé preguntas incómodas a quien dude más.','Si te acusan, remarcá que estuviste acompañado/a casi toda la noche.'] },
+  { id:'g2', name:'La Amiga Somnolienta',
+    hechos:'Te quedaste dormida en un sillón bastante temprano y te perdiste gran parte de la noche.',
+    defensas:['Usá tu propia falta de memoria a tu favor: "¿cómo iba a hacer algo si estaba dormida?"','Señalá que quien sí estuvo despierto hasta tarde tiene más para explicar.'] },
+  { id:'g3', name:'El Primo Curioso',
+    hechos:'Te la pasaste yendo y viniendo entre la cocina y el living: viste movimiento, pero nada concreto.',
+    defensas:['Tirá sospechas vagas sobre cualquiera que haya estado cerca de la cocina.','No afirmes nada con certeza, dejá la duda flotando.'] },
+  { id:'g4', name:'La Vecina de la Otra Cuadra',
+    hechos:'Llegaste recién cerca de la medianoche, cuando ya había pasado buena parte de la noche.',
+    defensas:['Usá que llegaste tarde para decir que te perdiste todo lo importante.','Preguntá mucho para parecer interesada en resolver el caso, no en esconder algo.'] },
+  { id:'g5', name:'El Que Llegó Tarde',
+    hechos:'Te uniste a la juntada bastante avanzada la noche y pasaste la mayor parte del tiempo en el patio.',
+    defensas:['Decí que desde el patio no se veía nada de lo que pasaba adentro.','Sugerí que el culpable tiene que ser alguien que estuvo mucho tiempo en el living.'] },
+  { id:'g6', name:'La Fotógrafa de la Noche',
+    hechos:'Te la pasaste sacando fotos y videos de la juntada, pero nunca apuntaste a la cocina ni al living.',
+    defensas:['Ofrecé mostrar tus fotos como coartada, aunque nunca resuelvan nada en concreto.','Usá el hecho de estar "siempre con el celular" como prueba de que no tuviste tiempo de hacer nada raro.'] },
+];
+const ROLE_BY_ID = Object.fromEntries(ROLES.map(r=>[r.id,r]));
+
+let attendees = [];
+let DATA = null; // final draw result
+
+function goTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  if(name==='pins') refreshPinOptions();
+  if(name==='guestpreview' && DATA) renderGuestApp('guestApp', DATA);
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click', ()=>goTab(t.dataset.tab)));
+
+document.getElementById('attendeesInput').addEventListener('input', (e)=>{
+  attendees = e.target.value.split('\n').map(s=>s.trim()).filter(Boolean);
+  document.getElementById('countNote').textContent = attendees.length + ' invitado(s) cargado(s).';
+});
+
+function refreshPinOptions(){
+  const nameSelects = [document.getElementById('pinName1'), document.getElementById('pinName2')];
+  nameSelects.forEach(sel=>{
+    const current = sel.value;
+    sel.innerHTML = '<option value="">— sin fijar —</option>' + attendees.map(a=>`<option value="${a}">${a}</option>`).join('');
+    sel.value = attendees.includes(current) ? current : '';
+  });
+  const roleSelects = [document.getElementById('pinRole1'), document.getElementById('pinRole2')];
+  roleSelects.forEach(sel=>{
+    const current = sel.value;
+    sel.innerHTML = '<option value="">— elegir —</option>' + ROLES.map(r=>`<option value="${r.id}">${r.name} (${r.id})</option>`).join('');
+    sel.value = current || '';
+  });
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function resolveText(text, nameByRole){
+  return text.replace(/\{\{(\w+)\}\}/g, (m,key)=> nameByRole[key] || 'esa persona');
+}
+
+function runDraw(){
+  const warnBox = document.getElementById('drawWarnings');
+  warnBox.innerHTML = '';
+  if(attendees.length < 3){
+    warnBox.innerHTML = '<div class="note warn">Cargá al menos 3 invitados en el paso 1 antes de sortear.</div>';
+    return;
+  }
+  const n = attendees.length;
+
+  // manual pins
+  const pins = [];
+  const p1n = document.getElementById('pinName1').value, p1r = document.getElementById('pinRole1').value;
+  const p2n = document.getElementById('pinName2').value, p2r = document.getElementById('pinRole2').value;
+  if(p1n && p1r) pins.push({name:p1n, roleId:p1r});
+  if(p2n && p2r) pins.push({name:p2n, roleId:p2r});
+  if(pins.length===2 && pins[0].roleId===pins[1].roleId){
+    warnBox.innerHTML = '<div class="note warn">Elegiste el mismo personaje para dos invitados fijos. Cambiá uno de los dos.</div>';
+    return;
+  }
+
+  // build final role id list: forced roles first, then priority order, up to n
+  let finalRoleIds = pins.map(p=>p.roleId);
+  for(const r of ROLES){
+    if(finalRoleIds.length>=n) break;
+    if(!finalRoleIds.includes(r.id)) finalRoleIds.push(r.id);
+  }
+  let overflowWarning = '';
+  if(n > ROLES.length){
+    // extend generic pool with numbered fallback if there are more guests than defined characters
+    let k = 1;
+    while(finalRoleIds.length < n){
+      const fakeId = 'extra'+k;
+      finalRoleIds.push(fakeId);
+      ROLE_BY_ID[fakeId] = { id:fakeId, name:'Invitado/a Sin Historia Propia #'+k,
+        hechos:'No tenés ningún dato especial: pasaste la noche como uno más de la juntada.',
+        defensas:['Escuchá bien las versiones de los demás y elegí a quién señalar según lo que digan.','No tenés coartada única, así que apoyate en el sentido común.'] };
+      k++;
+    }
+    overflowWarning = `<div class="note">Había más invitados que personajes con historia propia, así que se generaron ${k-1} personaje(s) genérico(s) extra automáticamente.</div>`;
+  }
+  finalRoleIds = finalRoleIds.slice(0, n);
+  warnBox.innerHTML = overflowWarning;
+
+  // separate pinned attendees/roles from the rest
+  const pinnedNames = pins.map(p=>p.name);
+  const remainingAttendees = shuffle(attendees.filter(a=>!pinnedNames.includes(a)));
+  const remainingRoles = shuffle(finalRoleIds.filter(id=>!pins.some(p=>p.roleId===id)));
+
+  const assignment = {}; // roleId -> name
+  pins.forEach(p=> assignment[p.roleId] = p.name);
+  remainingAttendees.forEach((name,i)=> assignment[remainingRoles[i]] = name);
+
+  const nameByRole = {}; // for placeholder resolution
+  Object.entries(assignment).forEach(([roleId,name])=> nameByRole[roleId]=name);
+
+  const usedPasswords = new Set();
+  function genPassword(){
+    let p;
+    do { p = String(Math.floor(1000 + Math.random()*9000)); } while(usedPasswords.has(p));
+    usedPasswords.add(p);
+    return p;
+  }
+
+  DATA = Object.entries(assignment).map(([roleId,name])=>{
+    const role = ROLE_BY_ID[roleId];
+    return {
+      name,
+      character: role.name,
+      hechos: resolveText(role.hechos, nameByRole),
+      defensas: role.defensas.map(d=>resolveText(d, nameByRole)),
+      password: genPassword(),
+      _roleId: roleId // admin-only reference
+    };
+  });
+
+  renderResultsTable(DATA);
+  document.getElementById('downloadBtn').style.display = 'inline-block';
+  document.getElementById('downloadNote').style.display = 'block';
+  document.getElementById('reDrawBtn').style.display = 'inline-block';
+  renderGuestApp('guestApp', DATA);
+}
+
+function renderResultsTable(data){
+  let html = '<table><thead><tr><th>Invitado</th><th>Personaje</th><th>Rol interno</th><th>Contraseña</th></tr></thead><tbody>';
+  data.forEach(d=>{
+    html += `<tr><td>${d.name}</td><td>${d.character}</td><td>${d._roleId}</td><td class="pass">${d.password}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('resultsTableWrap').innerHTML = html;
+
+  let msgs = '<label>Mensajes listos para copiar y pegar (uno por persona, por chat privado)</label>';
+  data.forEach(d=>{
+    msgs += `<div class="msg-line">Che ${d.name}, tu contraseña para ver tu ficha de "La Pata Secuestrada" es: ${d.password}</div>`;
+  });
+  document.getElementById('messagesWrap').innerHTML = msgs;
+}
+
+/* ---------- GUEST-SIDE RENDERER (shared by preview + exported file) ---------- */
+function renderGuestApp(containerId, data){
+  const el = document.getElementById(containerId);
+  el.innerHTML = `
+    <div class="grid" id="${containerId}-grid"></div>
+    <div class="modal-bg" id="${containerId}-modalbg">
+      <div class="modal">
+        <h3 id="${containerId}-modalname"></h3>
+        <p>Ingresá tu contraseña</p>
+        <input type="text" inputmode="numeric" id="${containerId}-pass" placeholder="••••">
+        <div class="err" id="${containerId}-err">Contraseña incorrecta. Probá de nuevo.</div>
+        <div class="actions">
+          <button class="btn primary" onclick="tryUnlock('${containerId}')">Ver mi ficha</button>
+          <button class="btn ghost" onclick="closeModal('${containerId}')">Cancelar</button>
+        </div>
+      </div>
+    </div>
+    <div id="${containerId}-reveal"></div>
+  `;
+  const grid = document.getElementById(containerId+'-grid');
+  data.forEach((d,i)=>{
+    const tile = document.createElement('div');
+    tile.className = 'name-tile';
+    tile.textContent = d.name;
+    tile.onclick = ()=> openModal(containerId, i);
+    grid.appendChild(tile);
+  });
+  el._data = data;
+}
+
+let activeGuestSelection = {};
+function openModal(containerId, idx){
+  activeGuestSelection[containerId] = idx;
+  const data = document.getElementById(containerId)._data;
+  document.getElementById(containerId+'-modalname').textContent = data[idx].name;
+  document.getElementById(containerId+'-pass').value = '';
+  document.getElementById(containerId+'-err').style.display = 'none';
+  document.getElementById(containerId+'-modalbg').classList.add('open');
+}
+function closeModal(containerId){
+  document.getElementById(containerId+'-modalbg').classList.remove('open');
+}
+function tryUnlock(containerId){
+  const idx = activeGuestSelection[containerId];
+  const data = document.getElementById(containerId)._data;
+  const entry = data[idx];
+  const val = document.getElementById(containerId+'-pass').value.trim();
+  if(val === entry.password){
+    closeModal(containerId);
+    const reveal = document.getElementById(containerId+'-reveal');
+    reveal.innerHTML = `
+      <div class="reveal">
+        <div class="stamp">Caso asignado</div>
+        <h2>${entry.name}, tu personaje es: ${entry.character}</h2>
+        <div class="sub">Leé bien esto antes de que empiece el debate. No lo muestres a nadie más.</div>
+        <h4>Lo que sabés / hiciste</h4>
+        <p>${entry.hechos}</p>
+        <h4>Cómo defenderte</h4>
+        <ul>${entry.defensas.map(d=>`<li>${d}</li>`).join('')}</ul>
+        <div class="back-link" onclick="document.getElementById('${containerId}-reveal').innerHTML=''">← Volver a la lista</div>
+      </div>
+    `;
+    reveal.scrollIntoView({behavior:'smooth'});
+  } else {
+    document.getElementById(containerId+'-err').style.display = 'block';
+  }
+}
+
+/* ---------- EXPORT FINAL GUEST-ONLY HTML ---------- */
+function downloadGuestFile(){
+  if(!DATA){ return; }
+  const publicData = DATA.map(d=>({name:d.name, character:d.character, hechos:d.hechos, defensas:d.defensas, password:d.password}));
+  const dataJson = JSON.stringify(publicData).replace(/</g,'\\u003c');
+
+  const rendererScript = `
+    ${resolveText.toString()}
+    let activeGuestSelection = {};
+    ${renderGuestApp.toString()}
+    ${openModal.toString()}
+    ${closeModal.toString()}
+    ${tryUnlock.toString()}
+    const GAME_DATA = ${dataJson};
+    document.addEventListener('DOMContentLoaded', ()=> renderGuestApp('guestApp', GAME_DATA));
+  `;
+
+  const doc = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Caso de la Pata Secuestrada</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>${document.querySelector('style').textContent}</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <div class="eyebrow">Expediente confidencial</div>
+    <h1>El Caso de la Pata Secuestrada</h1>
+    <p>Tocá tu nombre para ver tu ficha</p>
+  </header>
+  <div id="guestApp"></div>
+  <footer>No muestres tu ficha a nadie más hasta que termine el juego.</footer>
+</div>
+<script>${rendererScript}<\/script>
+</body>
+</html>`;
+
+  const blob = new Blob([doc], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'index.html';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>

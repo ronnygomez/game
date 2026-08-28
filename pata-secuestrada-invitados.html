@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Caso de la Pata Secuestrada</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --board:#241C15;
+    --board-2:#33261C;
+    --paper:#F1E6CC;
+    --paper-2:#E8D9B8;
+    --ink:#241C15;
+    --red:#A6362B;
+    --yellow:#D9A544;
+    --muted:#8A7860;
+    --green:#4C6B4F;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at 20% -10%, #3a2c20 0%, transparent 55%),
+      var(--board);
+    color:var(--paper);
+    font-family:'Libre Baskerville', serif;
+    min-height:100vh;
+    padding:32px 16px 80px;
+  }
+  h1,h2,h3,.label,.stamp,button,.tab{font-family:'Special Elite', monospace;}
+  .wrap{max-width:920px;margin:0 auto;}
+  header.masthead{text-align:center;margin-bottom:28px;}
+  header.masthead .eyebrow{
+    color:var(--yellow);letter-spacing:.14em;font-size:12px;text-transform:uppercase;
+  }
+  header.masthead h1{
+    font-size:clamp(28px,5vw,42px);margin:8px 0 4px;color:var(--paper);
+    text-shadow:2px 2px 0 rgba(0,0,0,.35);
+  }
+  header.masthead p{color:var(--muted);font-style:italic;margin:0;}
+
+  .tabs{display:flex;gap:8px;justify-content:center;margin:24px 0;flex-wrap:wrap;}
+  .tab{
+    background:var(--board-2);color:var(--paper);border:1px solid #4a3a2a;
+    padding:10px 18px;cursor:pointer;font-size:13px;letter-spacing:.04em;
+    border-radius:3px;
+  }
+  .tab.active{background:var(--red);color:#fff;border-color:var(--red);}
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .card{
+    background:var(--paper);color:var(--ink);border-radius:2px;
+    padding:24px;margin-bottom:20px;
+    box-shadow:0 10px 24px rgba(0,0,0,.35), 0 0 0 1px rgba(0,0,0,.05);
+    position:relative;
+  }
+  .card::before{
+    content:"";position:absolute;top:-7px;left:50%;transform:translateX(-50%);
+    width:12px;height:12px;border-radius:50%;
+    background:var(--red);box-shadow:0 1px 2px rgba(0,0,0,.5);
+  }
+  .card h2{margin-top:6px;font-size:18px;letter-spacing:.03em;}
+  .card h2 .n{color:var(--red);margin-right:8px;}
+  .hint{color:var(--muted);font-size:13px;margin:0 0 14px;font-style:italic;}
+
+  label{display:block;font-size:12px;letter-spacing:.05em;color:var(--muted);margin:14px 0 6px;text-transform:uppercase;font-family:'Special Elite',monospace;}
+  textarea,select,input[type=text]{
+    width:100%;font-family:'Libre Baskerville',serif;font-size:14px;
+    padding:10px;border:1px solid #cbb98c;border-radius:2px;background:#fffdf6;color:var(--ink);
+  }
+  textarea{min-height:150px;resize:vertical;}
+  .row{display:flex;gap:12px;flex-wrap:wrap;}
+  .row > div{flex:1;min-width:180px;}
+
+  button.btn{
+    margin-top:18px;background:var(--ink);color:var(--paper);border:none;
+    padding:12px 20px;border-radius:2px;cursor:pointer;font-size:13px;letter-spacing:.04em;
+  }
+  button.btn:hover{background:#3a2c20;}
+  button.btn.primary{background:var(--red);}
+  button.btn.primary:hover{background:#8c2c22;}
+  button.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--ink);}
+  button.btn:disabled{opacity:.4;cursor:not-allowed;}
+
+  table{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px;}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #d9c9a0;}
+  th{font-family:'Special Elite',monospace;font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.05em;}
+  td.pass{font-family:monospace;font-weight:bold;color:var(--red);letter-spacing:.08em;}
+  .msg-line{font-family:monospace;font-size:13px;background:#fffdf6;border:1px dashed #cbb98c;padding:6px 8px;margin:4px 0;border-radius:2px;}
+
+  .note{
+    background:#fff6e0;border-left:4px solid var(--yellow);padding:10px 14px;
+    font-size:13px;color:#4a3a1a;margin-top:14px;border-radius:2px;
+  }
+  .note.warn{border-left-color:var(--red);background:#fdecea;color:#6b241c;}
+
+  /* GUEST VIEW */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-top:18px;}
+  .name-tile{
+    background:var(--paper);color:var(--ink);border-radius:2px;padding:16px 10px;text-align:center;
+    cursor:pointer;font-family:'Special Elite',monospace;font-size:14px;
+    box-shadow:0 6px 14px rgba(0,0,0,.3);transition:transform .15s ease;
+    position:relative;
+  }
+  .name-tile:nth-child(3n){transform:rotate(-1.2deg);}
+  .name-tile:nth-child(3n+1){transform:rotate(1deg);}
+  .name-tile:hover{transform:scale(1.04) rotate(0deg);}
+  .name-tile::before{
+    content:"";position:absolute;top:-6px;left:50%;transform:translateX(-50%);
+    width:10px;height:10px;border-radius:50%;background:var(--red);
+  }
+
+  .modal-bg{
+    position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;
+    align-items:center;justify-content:center;z-index:50;padding:16px;
+  }
+  .modal-bg.open{display:flex;}
+  .modal{
+    background:var(--paper);color:var(--ink);border-radius:3px;padding:26px;max-width:420px;width:100%;
+    box-shadow:0 20px 50px rgba(0,0,0,.5);
+  }
+  .modal h3{margin-top:0;}
+  .modal input{margin-top:8px;}
+  .modal .err{color:var(--red);font-size:13px;margin-top:8px;display:none;}
+  .modal .actions{display:flex;gap:10px;margin-top:16px;}
+
+  .reveal{
+    background:var(--paper);color:var(--ink);border-radius:2px;padding:26px;margin-top:20px;
+    box-shadow:0 10px 24px rgba(0,0,0,.35);position:relative;
+  }
+  .reveal .stamp{
+    display:inline-block;color:var(--red);border:3px solid var(--red);padding:4px 12px;
+    transform:rotate(-6deg);font-size:12px;letter-spacing:.1em;border-radius:4px;margin-bottom:10px;
+  }
+  .reveal h2{margin:6px 0 2px;}
+  .reveal .sub{color:var(--muted);font-style:italic;margin-bottom:16px;}
+  .reveal h4{font-family:'Special Elite',monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--red);margin:18px 0 8px;}
+  .reveal ul{margin:0;padding-left:20px;}
+  .reveal li{margin-bottom:6px;}
+  .back-link{display:inline-block;margin-top:20px;color:var(--paper);cursor:pointer;text-decoration:underline;font-size:13px;}
+
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <div class="eyebrow">Expediente confidencial</div>
+    <h1>El Caso de la Pata Secuestrada</h1>
+    <p>Tocá tu nombre para ver tu ficha</p>
+  </header>
+  <div id="guestApp"></div>
+  <footer>No muestres tu ficha a nadie más hasta que termine el juego.</footer>
+</div>
+<script>
+    function resolveText(text, nameByRole){
+  return text.replace(/\{\{(\w+)\}\}/g, (m,key)=> nameByRole[key] || 'esa persona');
+}
+    let activeGuestSelection = {};
+    function renderGuestApp(containerId, data){
+  const el = document.getElementById(containerId);
+  el.innerHTML = `
+    <div class="grid" id="${containerId}-grid"></div>
+    <div class="modal-bg" id="${containerId}-modalbg">
+      <div class="modal">
+        <h3 id="${containerId}-modalname"></h3>
+        <p>Ingresá tu contraseña</p>
+        <input type="text" inputmode="numeric" id="${containerId}-pass" placeholder="••••">
+        <div class="err" id="${containerId}-err">Contraseña incorrecta. Probá de nuevo.</div>
+        <div class="actions">
+          <button class="btn primary" onclick="tryUnlock('${containerId}')">Ver mi ficha</button>
+          <button class="btn ghost" onclick="closeModal('${containerId}')">Cancelar</button>
+        </div>
+      </div>
+    </div>
+    <div id="${containerId}-reveal"></div>
+  `;
+  const grid = document.getElementById(containerId+'-grid');
+  data.forEach((d,i)=>{
+    const tile = document.createElement('div');
+    tile.className = 'name-tile';
+    tile.textContent = d.name;
+    tile.onclick = ()=> openModal(containerId, i);
+    grid.appendChild(tile);
+  });
+  el._data = data;
+}
+    function openModal(containerId, idx){
+  activeGuestSelection[containerId] = idx;
+  const data = document.getElementById(containerId)._data;
+  document.getElementById(containerId+'-modalname').textContent = data[idx].name;
+  document.getElementById(containerId+'-pass').value = '';
+  document.getElementById(containerId+'-err').style.display = 'none';
+  document.getElementById(containerId+'-modalbg').classList.add('open');
+}
+    function closeModal(containerId){
+  document.getElementById(containerId+'-modalbg').classList.remove('open');
+}
+    function tryUnlock(containerId){
+  const idx = activeGuestSelection[containerId];
+  const data = document.getElementById(containerId)._data;
+  const entry = data[idx];
+  const val = document.getElementById(containerId+'-pass').value.trim();
+  if(val === entry.password){
+    closeModal(containerId);
+    const reveal = document.getElementById(containerId+'-reveal');
+    reveal.innerHTML = `
+      <div class="reveal">
+        <div class="stamp">Caso asignado</div>
+        <h2>${entry.name}, tu personaje es: ${entry.character}</h2>
+        <div class="sub">Leé bien esto antes de que empiece el debate. No lo muestres a nadie más.</div>
+        <h4>Lo que sabés / hiciste</h4>
+        <p>${entry.hechos}</p>
+        <h4>Cómo defenderte</h4>
+        <ul>${entry.defensas.map(d=>`<li>${d}</li>`).join('')}</ul>
+        <div class="back-link" onclick="document.getElementById('${containerId}-reveal').innerHTML=''">← Volver a la lista</div>
+      </div>
+    `;
+    reveal.scrollIntoView({behavior:'smooth'});
+  } else {
+    document.getElementById(containerId+'-err').style.display = 'block';
+  }
+}
+    const GAME_DATA = [{"name":"Martín","character":"El Insomne","hechos":"No soportás el caos familiar ni la responsabilidad social de la mañana. Querés ir a la \"cárcel del juego\" para tener veinte minutos de paz.","defensas":["Defendete de manera normal, pero soltá de a poco uno o dos detalles sutiles que te compliquen. Nunca lo digas como un chiste ni lo repitas muchas veces.","Ejemplo de tono: mencioná de pasada que tenías barro en las zapatillas \"de la tarde, no de la noche\" — una aclaración que nadie te pidió."],"password":"6123"},{"name":"MatiasVivas","character":"El Buscador de Hielo","hechos":"Fuiste al congelador a buscar hielo para un trago a la medianoche y viste el momento exacto en que Belu metía una pata de peluche chamuscada adentro. Querés protegerlo/a a toda costa.","defensas":["Negá rotundamente que Belu haya tenido algo que ver.","Atacá a cualquiera que sospeche de esa persona diciendo que están inventando cosas para salvarse."],"password":"7098"},{"name":"LucasGualampa","character":"El Amigo Prolijo","hechos":"Temprano en la noche quisiste hacer una buena acción y lavaste el peluche del elefante porque estaba pegajoso. Sin embargo, cuando lo agarraste, el peluche ya no tenía la pata.","defensas":["Revelá cuando sea necesario que el peluche ya estaba mutilado desde temprano.","Asegurá que alguien se llevó o escondió la pata antes de que vos agarraras el peluche para lavarlo."],"password":"9625"},{"name":"PabloLeyes","character":"El Fumador Discreto","hechos":"Sentiste olor a humo cerca de la medianoche, cerca de Belu. Pensaste que estaba fumando a escondidas dentro de la casa y no dijiste nada para no meterlo/a en problemas.","defensas":["Sostené que sentiste olor a humo pegado a la ropa de esa persona, pero que creíste que era cigarrillo."],"password":"5442"},{"name":"MatiasCampos","character":"El Prevenido","hechos":"Hace dos semanas compraste una pata de elefante de repuesto por internet \"por si acaso\", pero la perdiste dentro de la baulera de tu auto anoche.","defensas":["Insistí en que tenés una solución al problema en el auto, aunque no tengas idea de dónde quedó la pata original."],"password":"7898"},{"name":"Nahuel","character":"El Guardián del Repasador","hechos":"A las 3:00 AM viste salir a Belu agitado/a de la cocina. Creyendo que había cometido una torpeza con la casa, encendiste la lavadora con unos repasadores para tapar el ruido y borrar cualquier rastro que lo incriminara.","defensas":["Admití abiertamente que encendiste la lavadora, pero jurá que fue solo porque manchaste un repasador con tu bebida.","Insistí en que el culpable tuvo que ser alguien que estuvo afuera o cerca del patio."],"password":"4267"},{"name":"EduarChilon","character":"El Dueño de Casa","hechos":"Dejaste la ventana del living abierta en un barrio lleno de gatos callejeros. Más tarde notaste barro en el sillón, te asustaste, cerraste la ventana y pasaste un trapo rápido por el tapizado para que no te retaran.","defensas":["Admití que limpiaste el sillón, pero jurá que fue solo porque alguien pisó con calzado sucio.","Sostené la teoría de que un gato callejero entró por la ventana y se llevó el peluche."],"password":"8219"},{"name":"Yesid","character":"El Agotado Social","hechos":"Igual que hay quien no soporta el caos, vos tampoco: llevás toda la mañana esquivando charlas y lo único que querés es que te \"condenen\" al rincón tranquilo de la casa.","defensas":["Dejá caer, como quien no quiere la cosa, que sabés más de la cocina o del freezer de lo que deberías.","No lo fuerces: alcanza con un comentario raro por vez, no con una confesión."],"password":"1919"},{"name":"Belu","character":"El Cocinero de Medianoche","hechos":"Le tiraste salsa o vino a \"Pata\" sin querer. Para limpiarla rápido y que nadie lo notara, la metiste al microondas para secarla. Echó humo y se chamuscó. Entraste en pánico y la escondiste en el fondo del congelador.","defensas":["Afirmá que estabas preparándote un té a la medianoche y se te quemó una tostada.","Desviá la atención hacia la lavadora, diciendo que alguien intentó lavar algo de madrugada para ocultar evidencias."],"password":"3746"},{"name":"Gaby","character":"La Otra Dueña del Perro","hechos":"Viniste con tu pareja y trajeron al perro entre los dos. Fuiste vos quien realmente vio al perro mordisqueando algo raro en el piso, rodeado de guata, y le avisaste a tu pareja para juntarla rápido antes de que alguien más la viera.","defensas":["Coordiná tu versión con quien tenga el mismo secreto del perro, sin contradecirse.","Si preguntan por la guata, dejá que hable primero la otra persona del perro y vos solo confirmá."],"password":"3837"},{"name":"LucasValenzuela","character":"El Sediento Nocturno","hechos":"Te levantaste a tomar agua a la madrugada y viste a EduarChilon limpiando a escondidas el sofá y cerrando la ventana a toda prisa.","defensas":["Acusá directamente a EduarChilon de estar ocultando algo grave que pasó en el sofá.","Exigí que explique por qué abrió la ventana de noche."],"password":"9748"},{"name":"Simo","character":"El Dueño del Perro","hechos":"Trajiste a tu perro a la reunión. A la noche lo encontraste mordisqueando algo en el piso y viste guata tirada. Asustado/a de que tu mascota hubiera destruido a \"Pata\", juntaste la guata con la mano y la tiraste rápido al tacho de basura.","defensas":["Ocultá que tu perro mordió algo.","Si te acusan por la guata del tacho, decí que la viste tirada y simplemente la juntaste por limpieza, pero echale la culpa al desorden general de la casa."],"password":"2675"},{"name":"Alan","character":"El Invitado Distraído","hechos":"No viste nada fuera de lo común: te la pasaste picando algo en la cocina y charlando de cualquier cosa.","defensas":["No tenés nada que ocultar, así que hacé preguntas incómodas a quien dude más.","Si te acusan, remarcá que estuviste acompañado/a casi toda la noche."],"password":"2033"}];
+    document.addEventListener('DOMContentLoaded', ()=> renderGuestApp('guestApp', GAME_DATA));
+  </script>
+</body>
+</html>
