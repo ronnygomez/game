@@ -36,7 +36,7 @@
     .dialog-actions button { padding: 8px 14px; border: 1px solid #bdc3c7; border-radius: 4px; cursor: pointer; font-weight: bold; }
     .dialog-confirm { background: #3498db; color: white; border-color: #2980b9 !important; }
 
-    .level-control { display: grid; gap: 5px; color: #34495e; font-size: 13px; font-weight: bold; }
+    .level-control { display: grid; gap: 5px; color: #586777; font-size: 13px; font-weight: bold; }
     .level-control select { width: 100%; border: 1px solid #bdc3c7; background: white; color: #2c3e50; }
     .admin-controls { display: grid; gap: 10px; }
     .admin-controls[hidden] { display: none; }
@@ -460,7 +460,7 @@
         });
 
         let dx = 0, dy = 0, dRot = 0, dScale = 0;
-        const speedFor = (action) => 1 * Math.pow(2, (actionCounts[action] || 0) - 1);
+        const speedFor = (action) => 0.5 * Math.pow(2, (actionCounts[action] || 0) - 1);
 
         // --- CÁLCULO DE MOVIMIENTO INDIVIDUAL ---
         if (actionCounts.up && !actionCounts.down) dy -= speedFor('up');
