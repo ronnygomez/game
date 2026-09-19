@@ -98,7 +98,20 @@
     font-size:13px;
     color:var(--accent);
   }
-  footer{margin-top:56px;color:#66707f;font-size:13px}
+  footer{margin-top:56px;color:#66707f;font-size:13px;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
+  footer a{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    color:var(--accent);
+    text-decoration:none;
+    border:1px solid var(--line);
+    background:rgba(110,231,183,.06);
+    padding:7px 13px;
+    border-radius:999px;
+    transition:border-color .18s ease,transform .18s ease;
+  }
+  footer a:hover{border-color:rgba(110,231,183,.45);transform:translateY(-2px)}
 
   /* Modal */
   .overlay{
@@ -175,9 +188,20 @@
         <p>Retos de construcción tipo Tangram donde el equipo solo avanza si se comunica bien.</p>
         <span class="go">Ver detalles →</span>
       </button>
+      <button class="card" data-game="mentelibre">
+        <div class="icon">🧠</div>
+        <h2>Mente Libre</h2>
+        <p>Espacio para crear libremente ideas</p>
+        <span class="go">Ver detalles →</span>
+      </button>
     </div>
 
-    <footer>Se requiere clave de acceso para entrar a cada dinámica.</footer>
+    <footer>
+      <span>Se requiere clave de acceso para entrar a cada dinámica.</span>
+      <a href="https://instagram.com/artesgomez" target="_blank" rel="noopener noreferrer">
+        <span aria-hidden="true">📸</span> @artesgomez
+      </a>
+    </footer>
   </main>
 
   <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
