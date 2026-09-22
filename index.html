@@ -225,6 +225,7 @@
 
 <script>
   const ACCESS_CODE = "555";
+  const ACCESS_STORAGE_KEY = "gamesAccessLastActivity";
 
   const GAMES = {
     misterio: {
@@ -296,6 +297,7 @@
       return;
     }
     if (passInput.value.trim() === ACCESS_CODE) {
+      localStorage.setItem(ACCESS_STORAGE_KEY, String(Date.now()));
       window.location.href = current.url;
     } else {
       errorEl.textContent = "Clave incorrecta. Inténtalo de nuevo.";
