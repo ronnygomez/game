@@ -41,6 +41,9 @@
     .level-control select { width: 100%; border: 1px solid #bdc3c7; background: white; color: #2c3e50; }
     .admin-controls { display: grid; gap: 10px; }
     .admin-controls[hidden] { display: none; }
+    .statistics-list { display: grid; gap: 5px; color: #34495e; font-size: 12px; }
+    .statistics-row { display: flex; justify-content: space-between; gap: 10px; padding: 5px 7px; background: white; border-radius: 3px; }
+    .statistics-empty { color: #7f8c8d; font-size: 12px; }
 
     .reference-figure { margin-top: auto; align-self: flex-start; }
     .reference-figure figcaption { margin-bottom: 6px; color: #555; font-size: 12px; font-weight: bold; }
@@ -127,6 +130,13 @@
         </label>
         <button class="btn-shuffle" id="startBtn" type="button">INICIAR NIVEL</button>
         <button class="btn-reset" id="solveBtn" type="button">RESOLVER NIVEL</button>
+        <div class="card">
+          <h4>Estadísticas de impulsos</h4>
+          <div class="statistics-list" id="statisticsList">
+            <span class="statistics-empty">Sin movimientos registrados.</span>
+          </div>
+        </div>
+        <button class="btn-reset" id="resetStatisticsBtn" type="button">RESET ESTADÍSTICAS</button>
       </div>
 
       <figure class="reference-figure" aria-label="Referencia del nivel seleccionado">
@@ -208,12 +218,19 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const stateRef = db.ref('gameState');
+    const statisticsRef = stateRef.child('statistics');
 
     // -----------------------------------------------------------------
     // 2. ESTADO LOCAL Y SELECCIÓN DE ELEMENTOS
     // -----------------------------------------------------------------
-    const playerId = 'player-' + Math.random().toString(36).slice(2);
+    const anonymousPlayerKey = 'tangramAnonymousSessionId';
+    let playerId = sessionStorage.getItem(anonymousPlayerKey);
+    if (!playerId) {
+      playerId = 'player-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      sessionStorage.setItem(anonymousPlayerKey, playerId);
+    }
     const activeActions = new Set();
+    let playerRegistration = null;
     let selectedElementId = "el1";
     let selectedLevel = '1';
     const keyActions = {
@@ -293,9 +310,37 @@
     buildSolutionReference('oradorReferenceStage', level2SolvedElements, 140, 0);
     buildSolutionReference('rocketReferenceStage', level3SolvedElements, 250, 80);
 
+    function ensurePlayerRegistration() {
+      if (playerRegistration) return playerRegistration;
+
+      const playerStatisticsRef = statisticsRef.child('players/' + playerId);
+      playerRegistration = playerStatisticsRef.once('value').then(snapshot => {
+        if (snapshot.exists()) return snapshot.val();
+
+        return statisticsRef.child('nextOrigin').transaction(current => (current || 0) + 1)
+          .then(result => {
+            const player = { origin: result.snapshot.val(), impulses: 0 };
+            return playerStatisticsRef.set(player).then(() => player);
+          });
+      }).catch(error => {
+        playerRegistration = null;
+        throw error;
+      });
+
+      return playerRegistration;
+    }
+
+    function registerImpulse() {
+      ensurePlayerRegistration().then(() => {
+        statisticsRef.child('players/' + playerId + '/impulses')
+          .transaction(current => (current || 0) + 1);
+      });
+    }
+
     // Selección de elemento activo (Hacer clic en cualquier objeto del canvas)
     document.querySelectorAll('.game-element').forEach(el => {
       el.addEventListener('click', () => {
+        registerImpulse();
         stateRef.child('selectedElement').set(el.id);
       });
     });
@@ -309,8 +354,29 @@
     const levelSelect = document.getElementById('levelSelect');
     const solveDialog = document.getElementById('solveDialog');
     const solveForm = document.getElementById('solveForm');
+    const statisticsList = document.getElementById('statisticsList');
 
     adminControls.hidden = !isAdmin;
+    ensurePlayerRegistration();
+
+    if (isAdmin) {
+      statisticsRef.child('players').on('value', snapshot => {
+        const players = Object.values(snapshot.val() || {})
+          .sort((first, second) => first.origin - second.origin);
+
+        if (!players.length) {
+          statisticsList.innerHTML = '<span class="statistics-empty">Sin movimientos registrados.</span>';
+          return;
+        }
+
+        statisticsList.innerHTML = players.map(player => `
+          <div class="statistics-row">
+            <span>Usuario origen ${player.origin}</span>
+            <strong>${player.impulses || 0}</strong>
+          </div>
+        `).join('');
+      });
+    }
 
     function showLevel(level) {
       selectedLevel = ['1', '2', '3'].includes(level) ? level : '1';
@@ -365,6 +431,18 @@
       solveDialog.showModal();
     });
 
+    document.getElementById('resetStatisticsBtn').addEventListener('click', () => {
+      if (!isAdmin) return;
+
+      statisticsRef.child('players').once('value').then(snapshot => {
+        const updates = {};
+        snapshot.forEach(playerSnapshot => {
+          updates[playerSnapshot.key + '/impulses'] = 0;
+        });
+        return statisticsRef.child('players').update(updates);
+      });
+    });
+
     document.getElementById('cancelSolveBtn').addEventListener('click', () => {
       solveDialog.close();
     });
@@ -390,6 +468,7 @@
       const action = keyActions[e.key];
       if (!action || e.repeat) return;
       e.preventDefault();
+      registerImpulse();
       setActionState(action, true);
     });
 
